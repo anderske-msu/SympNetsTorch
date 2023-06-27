@@ -192,7 +192,6 @@ class Activation(nn.Module):
         func: Callable,
         dim: int = 2,
         up_or_low: str = "up",
-        b: torch.Tensor = None,
         device: torch.device = None,
     ) -> None:
         """Creates an activation sympmetic modules."""
@@ -208,12 +207,6 @@ class Activation(nn.Module):
         elif up_or_low == "low":
             self.layer = activation_sub_low(func, dim=dim, device=device)
 
-        if b is None:
-            self.b = torch.zeros(2 * dim, dtype=torch.float32).to(device)
-
-        else:
-            self.b = b.to(device)
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         pq = torch.empty_like(x)
         nx = torch.empty_like(x)
@@ -222,8 +215,6 @@ class Activation(nn.Module):
         pq[..., self.dim :] = x[..., 0::2].clone()
 
         pq = self.layer(pq)
-
-        pq += self.b
 
         nx[..., : self.dim] = pq[..., 1::2].clone()
         nx[..., self.dim :] = pq[..., 0::2].clone()
