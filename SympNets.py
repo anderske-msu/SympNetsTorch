@@ -198,13 +198,13 @@ class Activation(nn.Module):
 
         super().__init__()
         self.dim = dim
-        self.device = check_device(device)  # Not yet used
+        self.device = check_device(device)
 
         if up_or_low == "up":
-            self.layer = activation_sub_up(func, dim=dim, device=device)
+            self.layer = activation_sub_up(func, dim=dim, device=self.device)
 
         elif up_or_low == "low":
-            self.layer = activation_sub_low(func, dim=dim, device=device)
+            self.layer = activation_sub_low(func, dim=dim, device=self.device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         pq = torch.empty_like(x)
@@ -242,20 +242,20 @@ class Linear(nn.Module):
 
         for _ in range(n):
             if uplow == "up":
-                mlist.append(linear_sub_up(dim=dim, device=device))
+                mlist.append(linear_sub_up(dim=dim, device=self.device))
                 uplow = "low"
 
             elif uplow == "low":
-                mlist.append(linear_sub_low(dim=dim, device=device))
+                mlist.append(linear_sub_low(dim=dim, device=self.device))
                 uplow = "up"
 
         self.layers = nn.ModuleList(mlist)
 
         if b is None:
-            self.b = torch.zeros(2 * dim, dtype=torch.float32).to(device)
+            self.b = torch.zeros(2 * dim, dtype=torch.float32).to(self.device)
 
         else:
-            self.b = b.to(device)
+            self.b = b.to(self.device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         pq = torch.empty_like(x)
