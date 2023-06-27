@@ -51,7 +51,7 @@ class linear_sub(nn.Module):
         return npq
 
 
-class linear(nn.Module):
+class Linear(nn.Module):
     def __init__(
         self, dim: int = 2, up_or_low: str = "up", n: int = 3, b: torch.Tensor = None
     ) -> None:
