@@ -25,7 +25,7 @@ def check_up_or_low(up_or_low: str) -> str:
     """Checks if a valid string was given for up_or_low."""
 
     if not up_or_low in ["up", "low"]:
-        msg = f'Expected up_or_low to be "up" or "low" got "{up_or_low}".'
+        msg = f'Expected up_or_low to be "up" or "low" got {up_or_low}.'
 
         raise Exception(msg)
 
