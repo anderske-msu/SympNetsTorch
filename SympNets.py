@@ -197,9 +197,8 @@ class Activation(nn.Module):
         """Creates an activation sympmetic modules."""
 
         super().__init__()
-        self.up_or_low = check_up_or_low(up_or_low)
-        self.device = check_device(device)
         self.dim = dim
+        self.device = check_device(device)  # Not yet used
 
         if up_or_low == "up":
             self.layer = activation_sub_up(func, dim=dim, device=device)
