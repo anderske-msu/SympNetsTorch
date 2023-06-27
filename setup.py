@@ -11,9 +11,9 @@ setuptools.setup(
     description='Sympletic PyTorch Modules',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/anderske-msu/Sympletic-PyTorch',
+    url='https://github.com/anderske-msu/SympNetsTorch',
     project_urls = {
-        "Bug Tracker": "https://github.com/anderske-msu/Sympletic-PyTorch/issues"
+        "Bug Tracker": "https://github.com/anderske-msu/SympNetsTorch/issues"
     },
     packages=['SympNetTorch'],
     install_requires=['torch'],
