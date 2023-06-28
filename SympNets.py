@@ -56,19 +56,16 @@ class activation_sub_up(nn.Module):
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
+            # Acting on q
             term_size = pq_size[0], pq_size[1] // 2
 
             term = torch.zeros(term_size, dtype=pq.dtype).to(self.device)
 
             for i in range(pq_size[0]):
-                term[i] = torch.mv(
-                    torch.diag(self.a), self.func(pq[i, self.dim :])
-                )  # acting on q
+                term[i] = torch.mv(torch.diag(self.a), self.func(pq[i, self.dim :]))
 
         else:
-            term = torch.mv(
-                torch.diag(self.a), self.func(pq[self.dim :])
-            )  # acting on q
+            term = torch.mv(torch.diag(self.a), self.func(pq[self.dim :]))
 
         npq[..., : self.dim] = pq[..., : self.dim] + term  # new p
         npq[..., self.dim :] = pq[..., self.dim :]  # new q
@@ -97,19 +94,16 @@ class activation_sub_low(nn.Module):
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
+            # Acting on p
             term_size = pq_size[0], pq_size[1] // 2
 
             term = torch.zeros(term_size, dtype=pq.dtype).to(self.device)
 
             for i in range(pq_size[0]):
-                term[i] = torch.mv(
-                    torch.diag(self.a), self.func(pq[i, : self.dim])
-                )  # acting on p
+                term[i] = torch.mv(torch.diag(self.a), self.func(pq[i, : self.dim]))
 
         else:
-            term = torch.mv(
-                torch.diag(self.a), self.func(pq[: self.dim])
-            )  # acting on p
+            term = torch.mv(torch.diag(self.a), self.func(pq[: self.dim]))
 
         npq[..., : self.dim] = pq[..., : self.dim]  # new p
         npq[..., self.dim :] = pq[..., self.dim :] + term  # new q
@@ -132,17 +126,16 @@ class linear_sub_low(nn.Module):
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
+            # Sp = (A +  A^T)p
             term_size = pq_size[0], pq_size[1] // 2
 
             term = torch.zeros(term_size, dtype=pq.dtype).to(self.device)
 
             for i in range(pq_size[0]):
-                term[i] = torch.mv(
-                    self.A + self.A.T, pq[i, : self.dim]
-                )  # Sp = (A +  A^T)p
+                term[i] = torch.mv(self.A + self.A.T, pq[i, : self.dim])
 
         else:
-            term = torch.mv(self.A + self.A.T, pq[: self.dim])  # Sp = (A +  A^T)p
+            term = torch.mv(self.A + self.A.T, pq[: self.dim])
 
         npq[..., : self.dim] = pq[..., : self.dim]  # new p
         npq[..., self.dim :] = pq[..., self.dim :] + term  # new q
@@ -165,17 +158,16 @@ class linear_sub_up(nn.Module):
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
+            # Sq = (A +  A^T)q
             term_size = pq_size[0], pq_size[1] // 2
 
             term = torch.zeros(term_size, dtype=pq.dtype).to(self.device)
 
             for i in range(pq_size[0]):
-                term[i] = torch.mv(
-                    self.A + self.A.T, pq[i, self.dim :]
-                )  # Sq = (A +  A^T)q
+                term[i] = torch.mv(self.A + self.A.T, pq[i, self.dim :])
 
         else:
-            term = torch.mv(self.A + self.A.T, pq[self.dim :])  # Sq = (A +  A^T)q
+            term = torch.mv(self.A + self.A.T, pq[self.dim :])
 
         npq[..., : self.dim] = pq[..., : self.dim] + term  # new p
         npq[..., self.dim :] = pq[..., self.dim :]  # new q
