@@ -65,7 +65,6 @@ class activation_sub_up(nn.Module):
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
         pq_size = pq.size()
-        npq = torch.empty_like(pq)
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
@@ -80,10 +79,9 @@ class activation_sub_up(nn.Module):
         else:
             term = torch.mv(torch.diag(self.a), self.func(pq[self.dim :]))
 
-        npq[..., : self.dim] = pq[..., : self.dim] + term  # new p
-        npq[..., self.dim :] = pq[..., self.dim :]  # new q
+        pq[..., : self.dim] += term  # new p
 
-        return npq
+        return pq
 
 
 class activation_sub_low(nn.Module):
@@ -103,7 +101,6 @@ class activation_sub_low(nn.Module):
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
         pq_size = pq.size()
-        npq = torch.empty_like(pq)
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
@@ -118,10 +115,9 @@ class activation_sub_low(nn.Module):
         else:
             term = torch.mv(torch.diag(self.a), self.func(pq[: self.dim]))
 
-        npq[..., : self.dim] = pq[..., : self.dim]  # new p
-        npq[..., self.dim :] = pq[..., self.dim :] + term  # new q
+        pq[..., self.dim :] += term  # new q
 
-        return npq
+        return pq
 
 
 class linear_sub_low(nn.Module):
@@ -135,7 +131,6 @@ class linear_sub_low(nn.Module):
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
         pq_size = pq.size()
-        npq = torch.empty_like(pq)
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
@@ -150,10 +145,9 @@ class linear_sub_low(nn.Module):
         else:
             term = torch.mv(self.A + self.A.T, pq[: self.dim])
 
-        npq[..., : self.dim] = pq[..., : self.dim]  # new p
-        npq[..., self.dim :] = pq[..., self.dim :] + term  # new q
+        pq[..., self.dim :] += term  # new q
 
-        return npq
+        return pq
 
 
 class linear_sub_up(nn.Module):
@@ -167,7 +161,6 @@ class linear_sub_up(nn.Module):
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
         pq_size = pq.size()
-        npq = torch.empty_like(pq)
 
         if len(pq_size) == 2:
             # This means the batch size is greater than 1 and will loop over the batch to get the term.
@@ -182,10 +175,9 @@ class linear_sub_up(nn.Module):
         else:
             term = torch.mv(self.A + self.A.T, pq[self.dim :])
 
-        npq[..., : self.dim] = pq[..., : self.dim] + term  # new p
-        npq[..., self.dim :] = pq[..., self.dim :]  # new q
+        pq[..., : self.dim] += term  # new p
 
-        return npq
+        return pq
 
 
 # * Full Modules
@@ -212,16 +204,11 @@ class Activation(nn.Module):
             self.layer = activation_sub_low(func, dim=dim, device=self.device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        pq = torch.empty_like(x)
-        nx = torch.empty_like(x)
-
-        pq[..., : self.dim] = x[..., 1::2].clone()
-        pq[..., self.dim :] = x[..., 0::2].clone()
+        pq = x_to_pq(x)
 
         pq = self.layer(pq)
 
-        nx[..., : self.dim] = pq[..., 1::2].clone()
-        nx[..., self.dim :] = pq[..., 0::2].clone()
+        nx = x_to_pq(pq)
 
         return nx
 
