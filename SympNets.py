@@ -7,6 +7,19 @@ import torch.nn as nn
 # * Functions
 
 
+def x_to_pq(x: torch.Tensor) -> torch.Tensor:
+    """Converts X (x, px, y, py) to PQ (x, y, px, py) for sympletic layers.
+    Putting in PQ instead of X will return X."""
+
+    dim = x.size()[-1] // 2
+    pq = torch.empty_like(x)
+
+    pq[..., :dim] = x[..., 1::2].clone()  # p
+    pq[..., dim:] = x[..., 0::2].clone()  # q
+
+    return pq
+
+
 def check_device(device: torch.device) -> torch.device:
     """Checks if device is a valid torch.device or is None. If None it will return a cpu device."""
 
@@ -250,18 +263,13 @@ class Linear(nn.Module):
             self.b = b.to(self.device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        pq = torch.empty_like(x)
-        nx = torch.empty_like(x)
-
-        pq[..., : self.dim] = x[..., 1::2].clone()
-        pq[..., self.dim :] = x[..., 0::2].clone()
+        pq = x_to_pq(x)
 
         for layer in self.layers:
             pq = layer(pq)
 
         pq += self.b
 
-        nx[..., : self.dim] = pq[..., 1::2].clone()
-        nx[..., self.dim :] = pq[..., 0::2].clone()
+        nx = x_to_pq(pq)
 
         return nx
