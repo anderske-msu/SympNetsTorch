@@ -5,8 +5,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 
-# TODO Add support for changing device
-
 # * Functions
 
 
@@ -101,9 +99,7 @@ def linear_matrix(
 
 
 class activation_sub_up(nn.Module):
-    def __init__(
-        self, func: Callable, dim: int = 2, device: torch.device = None
-    ) -> None:
+    def __init__(self, func: Callable, dim: int = 2) -> None:
         """Creates a upper trangular activation sympletic module.
 
         func is the activation function to be applied. Should apply a nonlinear activation function element by element.
@@ -129,9 +125,7 @@ class activation_sub_up(nn.Module):
 
 
 class activation_sub_low(nn.Module):
-    def __init__(
-        self, func: Callable, dim: int = 2, device: torch.device = None
-    ) -> None:
+    def __init__(self, func: Callable, dim: int = 2) -> None:
         """Creates a lower trangular activation sympletic module.
 
         func is the activation function to be applied. Should apply a nonlinear activation function element by element.
@@ -157,7 +151,7 @@ class activation_sub_low(nn.Module):
 
 
 class linear_sub_low(nn.Module):
-    def __init__(self, dim: int = 2, device: torch.device = None) -> None:
+    def __init__(self, dim: int = 2) -> None:
         """Creates a lower trangular linear sympletic module."""
 
         super().__init__()
@@ -179,7 +173,7 @@ class linear_sub_low(nn.Module):
 
 
 class linear_sub_up(nn.Module):
-    def __init__(self, dim: int = 2, device: torch.device = None) -> None:
+    def __init__(self, dim: int = 2) -> None:
         """Creates an upper trangular linear sympletic module."""
 
         super().__init__()
@@ -204,24 +198,17 @@ class linear_sub_up(nn.Module):
 
 
 class Activation(nn.Module):
-    def __init__(
-        self,
-        func: Callable,
-        dim: int = 2,
-        up_or_low: str = "up",
-        device: torch.device = None,
-    ) -> None:
+    def __init__(self, func: Callable, dim: int = 2, up_or_low: str = "up") -> None:
         """Creates an activation sympmetic modules."""
 
         super().__init__()
         self.dim = dim
-        device = check_device(device)
 
         if up_or_low == "up":
-            self.layer = activation_sub_up(func, dim=dim, device=device)
+            self.layer = activation_sub_up(func, dim=dim)
 
         elif up_or_low == "low":
-            self.layer = activation_sub_low(func, dim=dim, device=device)
+            self.layer = activation_sub_low(func, dim=dim)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         pq = x_to_pq(x)
@@ -235,42 +222,36 @@ class Activation(nn.Module):
 
 class Linear(nn.Module):
     def __init__(
-        self,
-        dim: int = 2,
-        up_or_low: str = "up",
-        n: int = 3,
-        b: torch.Tensor = None,
-        device: torch.device = None,
+        self, dim: int = 2, up_or_low: str = "up", n: int = 3, b: torch.Tensor = None
     ) -> None:
         """Creates an series of linear sympmetic modules."""
 
         super().__init__()
         self.dim = dim
-        device = check_device(device)
 
         uplow = str(check_up_or_low(up_or_low))
         mlist = []
 
         for _ in range(n):
             if uplow == "up":
-                mlist.append(linear_sub_up(dim=dim, device=device))
+                mlist.append(linear_sub_up(dim=dim))
                 uplow = "low"
 
             elif uplow == "low":
-                mlist.append(linear_sub_low(dim=dim, device=device))
+                mlist.append(linear_sub_low(dim=dim))
                 uplow = "up"
 
         self.layers = nn.ModuleList(mlist)
 
         if b is None:
-            self.b = torch.zeros(2 * dim, dtype=torch.float32, device=device)
+            self.b = torch.zeros(2 * dim, dtype=torch.float32)
 
         else:
-            self.b = b.to(device)
+            self.b = b
 
     def _apply(self, fn):
         self.b = fn(self.b)
-        
+
         return super()._apply(fn)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -287,29 +268,16 @@ class Linear(nn.Module):
 
 
 class test_network(nn.Module):
-    def __init__(self, device: torch.device = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        device = check_device(device)
         dim = 2
 
         self.layers = nn.ModuleList(
             [
-                Linear(
-                    dim=dim,
-                    up_or_low="up",
-                    n=4,
-                    device=device,
-                    b=torch.ones(2 * dim),
-                ),
-                Activation(torch.tanh, dim=dim, up_or_low="up", device=device),
-                Linear(
-                    dim=dim,
-                    up_or_low="low",
-                    n=4,
-                    b=torch.ones(2 * dim),
-                    device=device,
-                ),
-                Activation(torch.tanh, dim=dim, up_or_low="low", device=device),
+                Linear(dim=dim, up_or_low="up", n=4, b=torch.ones(2 * dim)),
+                Activation(torch.tanh, dim=dim, up_or_low="up"),
+                Linear(dim=dim, up_or_low="low", n=4, b=torch.ones(2 * dim)),
+                Activation(torch.tanh, dim=dim, up_or_low="low"),
             ]
         )
 
@@ -325,19 +293,16 @@ class test_network(nn.Module):
         return nx
 
 
-def test_modules(
-    numdata: int = 1000, batch_size: int = 150, device: torch.device = None
-):
+def test_modules(numdata: int = 1000, batch_size: int = 150):
     print("Starting test...")
     success = False
     # Split info
     test_size = 0.3
     random_state = 3
 
-    if device is None:
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    nn_model = test_network(device).to(device)
+    nn_model = test_network().to(device)
 
     def train_model(model, epochs, train_loader):
         train_losses = []
@@ -431,6 +396,6 @@ def test_modules(
 
     success = True
 
-    print("Test Done")
+    print("Test complete!")
 
     return success
