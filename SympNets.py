@@ -48,13 +48,13 @@ def check_up_or_low(up_or_low: str) -> str:
     return up_or_low
 
 
-def mul_m_pq(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor:
+def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor:
+    """Multiplies a given matrix by each of the batch of tensors given."""
     pq_size = pq.size()
 
     if len(pq_size) == 2:
         # This is a batch
-        with torch.no_grad():
-            mat = torch.stack(tuple(mat for _ in range(pq_size[0])))
+        mat = torch.stack(tuple(mat for _ in range(pq_size[0])))
         pq = torch.bmm(mat, pq.reshape(*pq_size, 1)).reshape(pq_size)
 
     else:
@@ -63,28 +63,21 @@ def mul_m_pq(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor:
     return pq
 
 
-def activate_pq_term(
-    func: Callable,
+def activate_matrix(
     a: torch.Tensor,
-    pq: torch.Tensor,
-    term_index: tuple,
-    pq_index: tuple,
+    dim: int,
+    index_1: tuple,
+    index_2: tuple,
+    dtype: type,
+    device: torch.device,
 ) -> torch.Tensor:
-    pq_size = pq.size()
-    tstart, tend = term_index
-    pqstart, pqend = pq_index
-    term = torch.zeros_like(pq)
+    """Creates the matrix to multiply by f(pq) to get the term to add to pq for the activation modules."""
+    s1, e1 = index_1
+    s2, e2 = index_2
+    m = torch.zeros((2 * dim, 2 * dim), dtype=dtype, device=device)
+    m[s1:e1, s2:e2] = torch.diag(a)
 
-    if len(pq_size) == 2:
-        # This means the batch size is greater than 1 and will loop over the batch to get the term.
-
-        for i in range(pq_size[0]):
-            term[i, tstart:tend] = torch.mv(torch.diag(a), func(pq[i, pqstart:pqend]))
-
-    else:
-        term[tstart:tend] = torch.mv(torch.diag(a), func(pq[pqstart:pqend]))
-
-    return term
+    return m
 
 
 def linear_matrix(
@@ -123,9 +116,15 @@ class activation_sub_up(nn.Module):
         self.func = func
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
-        pq += activate_pq_term(
-            self.func, self.a, pq, term_index=(0, self.dim), pq_index=(self.dim, None)
-        )  # Acts on q, gives new p
+        matmul = activate_matrix(
+            self.a,
+            self.dim,
+            index_1=(0, self.dim),
+            index_2=(self.dim, None),
+            dtype=pq.dtype,
+            device=self.device,
+        )
+        pq += batch_mul_matrix_vector(matmul, self.func(pq))  # Acts on q, gives new p
 
         return pq
 
@@ -146,9 +145,15 @@ class activation_sub_low(nn.Module):
         self.func = func
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
-        pq += activate_pq_term(
-            self.func, self.a, pq, term_index=(self.dim, None), pq_index=(0, self.dim)
-        )  # Acts on p, gives new q
+        matmul = activate_matrix(
+            self.a,
+            self.dim,
+            index_1=(self.dim, None),
+            index_2=(0, self.dim),
+            dtype=pq.dtype,
+            device=self.device,
+        )
+        pq += batch_mul_matrix_vector(matmul, self.func(pq))
 
         return pq
 
@@ -171,7 +176,7 @@ class linear_sub_low(nn.Module):
             dtype=pq.dtype,
             device=self.device,
         )
-        pq = mul_m_pq(matmul, pq)
+        pq = batch_mul_matrix_vector(matmul, pq)
 
         return pq
 
@@ -194,7 +199,7 @@ class linear_sub_up(nn.Module):
             dtype=pq.dtype,
             device=self.device,
         )
-        pq = mul_m_pq(matmul, pq)
+        pq = batch_mul_matrix_vector(matmul, pq)
 
         return pq
 
