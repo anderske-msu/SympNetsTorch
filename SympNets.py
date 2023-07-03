@@ -21,20 +21,6 @@ def x_to_pq(x: torch.Tensor) -> torch.Tensor:
     return pq
 
 
-def check_device(device: torch.device) -> torch.device:
-    """Checks if device is a valid torch.device or is None. If None it will return a cpu device."""
-
-    if device is None:
-        return_device = torch.device("cpu")
-    elif type(device) is torch.device:
-        return_device = device
-    else:
-        msg = f"Invalid device, expected argument to be of type {torch.device}, got type {type(device)}."
-        raise Exception(msg)
-
-    return return_device
-
-
 def check_up_or_low(up_or_low: str) -> str:
     """Checks if a valid string was given for up_or_low."""
 
