@@ -111,7 +111,6 @@ class activation_sub_up(nn.Module):
 
         super().__init__()
         self.a = nn.Parameter(torch.randn(dim))
-        self.device = check_device(device)
         self.dim = dim
         self.func = func
 
@@ -122,7 +121,7 @@ class activation_sub_up(nn.Module):
             index_1=(0, self.dim),
             index_2=(self.dim, None),
             dtype=pq.dtype,
-            device=self.device,
+            device=pq.device,
         )
         pq += batch_mul_matrix_vector(matmul, self.func(pq))  # Acts on q, gives new p
 
@@ -140,7 +139,6 @@ class activation_sub_low(nn.Module):
 
         super().__init__()
         self.a = nn.Parameter(torch.randn(dim))
-        self.device = check_device(device)
         self.dim = dim
         self.func = func
 
@@ -151,7 +149,7 @@ class activation_sub_low(nn.Module):
             index_1=(self.dim, None),
             index_2=(0, self.dim),
             dtype=pq.dtype,
-            device=self.device,
+            device=pq.device,
         )
         pq += batch_mul_matrix_vector(matmul, self.func(pq))
 
@@ -164,7 +162,6 @@ class linear_sub_low(nn.Module):
 
         super().__init__()
         self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
-        self.device = check_device(device)
         self.dim = dim
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
@@ -174,7 +171,7 @@ class linear_sub_low(nn.Module):
             index_1=(self.dim, None),
             index_2=(0, self.dim),
             dtype=pq.dtype,
-            device=self.device,
+            device=pq.device,
         )
         pq = batch_mul_matrix_vector(matmul, pq)
 
@@ -187,7 +184,6 @@ class linear_sub_up(nn.Module):
 
         super().__init__()
         self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
-        self.device = check_device(device)
         self.dim = dim
 
     def forward(self, pq: torch.Tensor) -> torch.Tensor:
@@ -197,7 +193,7 @@ class linear_sub_up(nn.Module):
             index_1=(0, self.dim),
             index_2=(self.dim, None),
             dtype=pq.dtype,
-            device=self.device,
+            device=pq.device,
         )
         pq = batch_mul_matrix_vector(matmul, pq)
 
@@ -219,13 +215,13 @@ class Activation(nn.Module):
 
         super().__init__()
         self.dim = dim
-        self.device = check_device(device)
+        device = check_device(device)
 
         if up_or_low == "up":
-            self.layer = activation_sub_up(func, dim=dim, device=self.device)
+            self.layer = activation_sub_up(func, dim=dim, device=device)
 
         elif up_or_low == "low":
-            self.layer = activation_sub_low(func, dim=dim, device=self.device)
+            self.layer = activation_sub_low(func, dim=dim, device=device)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         pq = x_to_pq(x)
@@ -249,29 +245,33 @@ class Linear(nn.Module):
         """Creates an series of linear sympmetic modules."""
 
         super().__init__()
-        self.up_or_low = check_up_or_low(up_or_low)
-        self.device = check_device(device)
         self.dim = dim
+        device = check_device(device)
 
-        uplow = str(up_or_low)
+        uplow = str(check_up_or_low(up_or_low))
         mlist = []
 
         for _ in range(n):
             if uplow == "up":
-                mlist.append(linear_sub_up(dim=dim, device=self.device))
+                mlist.append(linear_sub_up(dim=dim, device=device))
                 uplow = "low"
 
             elif uplow == "low":
-                mlist.append(linear_sub_low(dim=dim, device=self.device))
+                mlist.append(linear_sub_low(dim=dim, device=device))
                 uplow = "up"
 
         self.layers = nn.ModuleList(mlist)
 
         if b is None:
-            self.b = torch.zeros(2 * dim, dtype=torch.float32, device=self.device)
+            self.b = torch.zeros(2 * dim, dtype=torch.float32, device=device)
 
         else:
-            self.b = b.to(self.device)
+            self.b = b.to(device)
+
+    def _apply(self, fn):
+        self.b = fn(self.b)
+        
+        return super()._apply(fn)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         pq = x_to_pq(x)
@@ -289,7 +289,7 @@ class Linear(nn.Module):
 class test_network(nn.Module):
     def __init__(self, device: torch.device = None) -> None:
         super().__init__()
-        self.device = check_device(device)
+        device = check_device(device)
         dim = 2
 
         self.layers = nn.ModuleList(
@@ -298,18 +298,18 @@ class test_network(nn.Module):
                     dim=dim,
                     up_or_low="up",
                     n=4,
-                    device=self.device,
+                    device=device,
                     b=torch.ones(2 * dim),
                 ),
-                Activation(torch.tanh, dim=dim, up_or_low="up", device=self.device),
+                Activation(torch.tanh, dim=dim, up_or_low="up", device=device),
                 Linear(
                     dim=dim,
                     up_or_low="low",
                     n=4,
                     b=torch.ones(2 * dim),
-                    device=self.device,
+                    device=device,
                 ),
-                Activation(torch.tanh, dim=dim, up_or_low="low", device=self.device),
+                Activation(torch.tanh, dim=dim, up_or_low="low", device=device),
             ]
         )
 
