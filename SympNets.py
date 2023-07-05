@@ -187,7 +187,6 @@ class Activation(nn.Module):
         """Creates an activation sympmetic modules."""
 
         super().__init__()
-        self.dim = dim
 
         if up_or_low == "up":
             self.layer = activation_sub_up(func, dim=dim)
@@ -212,7 +211,6 @@ class Linear(nn.Module):
         """Creates an series of linear sympmetic modules."""
 
         super().__init__()
-        self.dim = dim
 
         uplow = str(check_up_or_low(up_or_low))
         mlist = []
