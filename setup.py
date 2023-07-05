@@ -16,5 +16,5 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/anderske-msu/SympNetsTorch/issues"
     },
     packages=["SympNetTorch"],
-    install_requires=["torch", "sklearn"],
+    install_requires=["torch"],
 )
