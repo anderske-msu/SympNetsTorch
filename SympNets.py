@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from sklearn.model_selection import train_test_split
 
 # * Functions
 
@@ -257,23 +256,21 @@ class test_network(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         dim = 2
+        n1 = 4
+        n2 = n1
 
-        self.layers = nn.ModuleList(
-            [
-                Linear(dim=dim, up_or_low="up", n=4, b=torch.ones(2 * dim)),
-                Activation(torch.tanh, dim=dim, up_or_low="up"),
-                Linear(dim=dim, up_or_low="low", n=4, b=torch.ones(2 * dim)),
-                Activation(torch.tanh, dim=dim, up_or_low="low"),
-            ]
-        )
+        self.lu = Linear(dim=dim, up_or_low="up", n=n1, b=torch.ones(2 * dim))
+        self.au = Activation(torch.tanh, dim=dim, up_or_low="up")
+        self.ll = Linear(dim=dim, up_or_low="low", n=n2, b=torch.ones(2 * dim))
+        self.al = Activation(torch.tanh, dim=dim, up_or_low="low")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         torch.autograd.set_detect_anomaly(True)
         pq = x_to_pq(x)
-
-        for layer in self.layers:
-            pq = layer(pq)
-
+        pq = self.lu(pq)
+        pq = self.au(pq)
+        pq = self.ll(pq)
+        pq = self.al(pq)
         nx = x_to_pq(pq)
 
         return nx
@@ -281,10 +278,8 @@ class test_network(nn.Module):
 
 def test_modules(numdata: int = 1000, batch_size: int = 150):
     print("Starting test...")
-    success = False
-    # Split info
     test_size = 0.3
-    random_state = 3
+    success = False
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -339,18 +334,14 @@ def test_modules(numdata: int = 1000, batch_size: int = 150):
         return test_losses
 
     # Main
+    numtest = int(test_size * numdata)
+    numtrain = numdata - numtest
 
-    train_x, test_x, train_y, test_y = train_test_split(
-        torch.randn((numdata, 4)),
-        torch.randn((numdata, 4)),
-        test_size=test_size,
-        random_state=random_state,
-    )
+    train_x = torch.randn((numtrain, 4)).to(device)
+    train_y = torch.randn_like(train_x)
 
-    train_x = train_x.to(device)
-    test_x = test_x.to(device)
-    train_y = train_y.to(device)
-    test_y = test_y.to(device)
+    test_x = torch.randn((numtest, 4)).to(device)
+    test_y = torch.randn_like(test_x)
 
     # Network and Constraint Objects
     optimizer = optim.Adam(nn_model.parameters())
