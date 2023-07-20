@@ -53,12 +53,20 @@ def activate_matrix(
     index_2: tuple,
     dtype: type,
     device: torch.device,
+    inverse: bool,
 ) -> torch.Tensor:
     """Creates the matrix to multiply by f(pq) to get the term to add to pq for the activation modules."""
     s1, e1 = index_1
     s2, e2 = index_2
     m = torch.zeros((2 * dim, 2 * dim), dtype=dtype, device=device)
-    m[s1:e1, s2:e2] = torch.diag(a)
+
+    if inverse:
+        sign = -1
+
+    else:
+        sign = 1
+
+    m[s1:e1, s2:e2] = sign * torch.diag(a)
 
     return m
 
@@ -70,12 +78,18 @@ def linear_matrix(
     index_2: tuple,
     dtype: type,
     device: torch.device,
+    inverse: bool,
 ) -> torch.Tensor:
     s1, e1 = index_1
     s2, e2 = index_2
-
     m = torch.eye(2 * dim, dtype=dtype, device=device)
-    m[s1:e1, s2:e2] = A + A.T
+
+    if inverse:
+        sign = -1
+    else:
+        sign = 1
+
+    m[s1:e1, s2:e2] = sign * (A + A.T)
 
     return m
 
@@ -95,7 +109,7 @@ class activation_sub_up(nn.Module):
         self.dim = dim
         self.func = func
 
-    def forward(self, pq: torch.Tensor) -> torch.Tensor:
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
         matmul = activate_matrix(
             self.a,
             self.dim,
@@ -103,6 +117,7 @@ class activation_sub_up(nn.Module):
             index_2=(self.dim, None),
             dtype=pq.dtype,
             device=pq.device,
+            inverse=inverse,
         )
         pq += batch_mul_matrix_vector(matmul, self.func(pq))  # Acts on q, gives new p
 
@@ -121,7 +136,7 @@ class activation_sub_low(nn.Module):
         self.dim = dim
         self.func = func
 
-    def forward(self, pq: torch.Tensor) -> torch.Tensor:
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
         matmul = activate_matrix(
             self.a,
             self.dim,
@@ -129,6 +144,7 @@ class activation_sub_low(nn.Module):
             index_2=(0, self.dim),
             dtype=pq.dtype,
             device=pq.device,
+            inverse=inverse,
         )
         pq += batch_mul_matrix_vector(matmul, self.func(pq))
 
@@ -143,7 +159,7 @@ class linear_sub_low(nn.Module):
         self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
         self.dim = dim
 
-    def forward(self, pq: torch.Tensor) -> torch.Tensor:
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
         matmul = linear_matrix(
             self.A,
             self.dim,
@@ -151,6 +167,7 @@ class linear_sub_low(nn.Module):
             index_2=(0, self.dim),
             dtype=pq.dtype,
             device=pq.device,
+            inverse=inverse,
         )
         pq = batch_mul_matrix_vector(matmul, pq)
 
@@ -165,7 +182,7 @@ class linear_sub_up(nn.Module):
         self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
         self.dim = dim
 
-    def forward(self, pq: torch.Tensor) -> torch.Tensor:
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
         matmul = linear_matrix(
             self.A,
             self.dim,
@@ -173,6 +190,7 @@ class linear_sub_up(nn.Module):
             index_2=(self.dim, None),
             dtype=pq.dtype,
             device=pq.device,
+            inverse=inverse,
         )
         pq = batch_mul_matrix_vector(matmul, pq)
 
@@ -194,10 +212,10 @@ class Activation(nn.Module):
         elif up_or_low == "low":
             self.layer = activation_sub_low(func, dim=dim)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, inverse: bool = False) -> torch.Tensor:
         pq = x_to_pq(x)
 
-        pq = self.layer(pq)
+        pq = self.layer(pq, inverse=inverse)
 
         nx = x_to_pq(pq)
 
@@ -237,38 +255,53 @@ class Linear(nn.Module):
 
         return super()._apply(fn)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, inverse: bool = False) -> torch.Tensor:
         pq = x_to_pq(x)
 
-        for layer in self.layers:
-            pq = layer(pq)
+        if inverse:
+            pq -= self.b
 
-        pq += self.b
+            for layer in reversed(self.layers):
+                pq = layer(pq, inverse=True)
+
+        else:
+            for layer in self.layers:
+                pq = layer(pq)
+
+            pq += self.b
 
         nx = x_to_pq(pq)
 
         return nx
 
 
-class test_network(nn.Module):
+class __test_network(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         dim = 2
-        n1 = 4
-        n2 = n1
+        n1 = n2 = 4
 
         self.lu = Linear(dim=dim, up_or_low="up", n=n1, b=torch.ones(2 * dim))
         self.au = Activation(torch.tanh, dim=dim, up_or_low="up")
         self.ll = Linear(dim=dim, up_or_low="low", n=n2, b=torch.ones(2 * dim))
         self.al = Activation(torch.tanh, dim=dim, up_or_low="low")
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, inverse: bool = False) -> torch.Tensor:
         torch.autograd.set_detect_anomaly(True)
         pq = x_to_pq(x)
-        pq = self.lu(pq)
-        pq = self.au(pq)
-        pq = self.ll(pq)
-        pq = self.al(pq)
+
+        if inverse:
+            pq = self.al(pq, inverse=True)
+            pq = self.ll(pq, inverse=True)
+            pq = self.au(pq, inverse=True)
+            pq = self.lu(pq, inverse=True)
+
+        else:
+            pq = self.lu(pq)
+            pq = self.au(pq)
+            pq = self.ll(pq)
+            pq = self.al(pq)
+
         nx = x_to_pq(pq)
 
         return nx
@@ -281,7 +314,7 @@ def test_modules(numdata: int = 1000, batch_size: int = 150):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    nn_model = test_network().to(device)
+    nn_model = __test_network().to(device)
 
     def train_model(model, epochs, train_loader):
         train_losses = []
@@ -297,6 +330,8 @@ def test_modules(numdata: int = 1000, batch_size: int = 150):
 
             # evaluate network with data
             output = model(data)
+            output = model(output, inverse=True)
+            output = model(output)
 
             # compute loss and derivative
             loss = F.mse_loss(output, target)
@@ -323,6 +358,8 @@ def test_modules(numdata: int = 1000, batch_size: int = 150):
         with torch.no_grad():
             for data, target in test_loader:
                 output = model(data)
+                output = model(output, inverse=True)
+                output = model(output)
 
                 test_loss += F.mse_loss(output, target).item()
 
