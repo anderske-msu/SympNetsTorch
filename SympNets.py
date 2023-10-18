@@ -53,7 +53,9 @@ def activate_matrix(
     device: torch.device,
     inverse: bool,
 ) -> torch.Tensor:
-    """Creates the matrix to multiply by f(pq) to get the term to add to pq for the activation modules."""
+    """Creates the matrix to multiply by f(pq) to get the term to add to pq for the 
+    activation modules.
+    """
     s1, e1 = index_1
     s2, e2 = index_2
     m = torch.zeros((2 * dim, 2 * dim), dtype=dtype, device=device)
@@ -99,7 +101,8 @@ class activation_sub_up(nn.Module):
     def __init__(self, func: Callable, dim: int = 2) -> None:
         """Creates a upper trangular activation sympletic module.
 
-        func is the activation function to be applied. Should apply a nonlinear activation function element by element.
+        func is the activation function to be applied. Should apply a nonlinear 
+        activation function element by element.
         """
 
         super().__init__()
@@ -126,7 +129,8 @@ class activation_sub_low(nn.Module):
     def __init__(self, func: Callable, dim: int = 2) -> None:
         """Creates a lower trangular activation sympletic module.
 
-        func is the activation function to be applied. Should apply a nonlinear activation function element by element.
+        func is the activation function to be applied. Should apply a nonlinear 
+        activation function element by element.
         """
 
         super().__init__()
