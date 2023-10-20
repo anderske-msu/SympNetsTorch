@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Tuple, List
 import torch
 import torch.nn as nn
 
@@ -7,7 +7,17 @@ import torch.nn as nn
 
 def x_to_pq(x: torch.Tensor) -> torch.Tensor:
     """Converts X (x, px, y, py) to PQ (x, y, px, py) for sympletic layers.
-    Putting in PQ instead of X will return X."""
+    Putting in PQ instead of X will return X.
+
+    Args:
+    - x: torch.Tensor: The input tensor of shape (batch_size, features).
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    """
 
     dim = x.size()[-1] // 2
     pq = torch.empty_like(x)
@@ -19,7 +29,17 @@ def x_to_pq(x: torch.Tensor) -> torch.Tensor:
 
 
 def check_up_or_low(up_or_low: str) -> str:
-    """Checks if a valid string was given for up_or_low."""
+    """Checks if a valid string was given for up_or_low.
+
+    Args:
+    - up_or_low: str: The string to check.
+
+    Returns:
+    - str: The input string if it is valid.
+
+    Raises:
+    - Exception: If the input string is not "up" or "low".
+    """
 
     if not up_or_low in ["up", "low"]:
         msg = f'Expected up_or_low to be "up" or "low" got {up_or_low}.'
@@ -30,7 +50,18 @@ def check_up_or_low(up_or_low: str) -> str:
 
 
 def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor:
-    """Multiplies a given matrix by each of the batch of tensors given."""
+    """Multiplies a given matrix by each of the batch of tensors given.
+
+    Args:
+    - mat: torch.Tensor: The matrix to multiply with.
+    - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    """
     pq_size = pq.size()
 
     if len(pq_size) == 2:
@@ -47,14 +78,31 @@ def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor
 def activate_matrix(
     a: torch.Tensor,
     dim: int,
-    index_1: tuple,
-    index_2: tuple,
+    index_1: Tuple[int, int],
+    index_2: Tuple[int, int],
     dtype: type,
     device: torch.device,
     inverse: bool,
 ) -> torch.Tensor:
-    """Creates the matrix to multiply by f(pq) to get the term to add to pq for the 
+    """Creates the matrix to multiply by f(pq) to get the term to add to pq for the
     activation modules.
+
+    Args:
+    - a: torch.Tensor: The input tensor of shape (batch_size, dimentions).
+    - dim: int: The number of dimensions.
+    - index_1: tuple: A tuple of two integers representing the start and end indices
+        of the first dimension.
+    - index_2: tuple: A tuple of two integers representing the start and end indices
+        of the second dimension.
+    - dtype: type: The data type of the output tensor.
+    - device: torch.device: The device to use for the output tensor.
+    - inverse: bool: Whether to use the inverse sign.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (2 * dim, 2 * dim).
+
+    Raises:
+    - None
     """
     s1, e1 = index_1
     s2, e2 = index_2
@@ -74,12 +122,31 @@ def activate_matrix(
 def linear_matrix(
     A: torch.Tensor,
     dim: int,
-    index_1: tuple,
-    index_2: tuple,
+    index_1: Tuple[int, int],
+    index_2: Tuple[int, int],
     dtype: type,
     device: torch.device,
     inverse: bool,
 ) -> torch.Tensor:
+    """Creates a matrix for the linear modules.
+
+    Args:
+    - A: torch.Tensor: The parameters of the linear module of shape (dim, dim).
+    - dim: int: The number of dimensions.
+    - index_1: tuple: A tuple of two integers representing the start and end indices
+        of the first dimension.
+    - index_2: tuple: A tuple of two integers representing the start and end indices
+        of the second dimension.
+    - dtype: type: The data type of the output tensor.
+    - device: torch.device: The device to use for the output tensor.
+    - inverse: bool: Whether to use the inverse matrix.
+
+    Returns:
+    - torch.Tensor: The matrix of shape (2 * dim, 2 * dim).
+
+    Raises:
+    - None
+    """
     s1, e1 = index_1
     s2, e2 = index_2
     m = torch.eye(2 * dim, dtype=dtype, device=device)
@@ -99,10 +166,18 @@ def linear_matrix(
 
 class activation_sub_up(nn.Module):
     def __init__(self, func: Callable, dim: int = 2) -> None:
-        """Creates a upper trangular activation sympletic module.
+        """Creates an upper triangular symplectic activation module.
 
-        func is the activation function to be applied. Should apply a nonlinear 
-        activation function element by element.
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+        nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
         """
 
         super().__init__()
@@ -111,6 +186,19 @@ class activation_sub_up(nn.Module):
         self.func = func
 
     def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
+        """Applies the upper triangular activation symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse sign.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        """
+
         matmul = activate_matrix(
             self.a,
             self.dim,
@@ -127,10 +215,18 @@ class activation_sub_up(nn.Module):
 
 class activation_sub_low(nn.Module):
     def __init__(self, func: Callable, dim: int = 2) -> None:
-        """Creates a lower trangular activation sympletic module.
+        """Creates a lower triangular activation symplectic module.
 
-        func is the activation function to be applied. Should apply a nonlinear 
-        activation function element by element.
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+            nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
         """
 
         super().__init__()
@@ -139,6 +235,19 @@ class activation_sub_low(nn.Module):
         self.func = func
 
     def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
+        """Applies the lower triangular activation symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        """
+
         matmul = activate_matrix(
             self.a,
             self.dim,
@@ -155,13 +264,36 @@ class activation_sub_low(nn.Module):
 
 class linear_sub_low(nn.Module):
     def __init__(self, dim: int = 2) -> None:
-        """Creates a lower trangular linear sympletic module."""
+        """Creates a lower triangular linear symplectic module.
+
+        Args:
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        """
 
         super().__init__()
         self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
         self.dim = dim
 
     def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
+        """Applies the lower triangular linear symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        """
+
         matmul = linear_matrix(
             self.A,
             self.dim,
@@ -178,13 +310,36 @@ class linear_sub_low(nn.Module):
 
 class linear_sub_up(nn.Module):
     def __init__(self, dim: int = 2) -> None:
-        """Creates an upper trangular linear sympletic module."""
+        """Creates an upper triangular linear symplectic module.
+
+        Args:
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        """
 
         super().__init__()
         self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
         self.dim = dim
 
     def forward(self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor:
+        """Applies the upper triangular linear symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size,features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size,features).
+
+        Raises:
+        - None
+        """
+
         matmul = linear_matrix(
             self.A,
             self.dim,
@@ -204,7 +359,20 @@ class linear_sub_up(nn.Module):
 
 class Activation(nn.Module):
     def __init__(self, func: Callable, dim: int = 2, up_or_low: str = "up") -> None:
-        """Creates an activation sympmetic modules."""
+        """Creates an activation symplectic module.
+
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+            nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+        - up_or_low: str: Whether to use an upper or lower triangular activation module.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        """
 
         super().__init__()
 
@@ -215,6 +383,18 @@ class Activation(nn.Module):
             self.layer = activation_sub_low(func, dim=dim)
 
     def forward(self, x: torch.Tensor, inverse: bool = False) -> torch.Tensor:
+        """Applies the activation symplectic module to the given tensor.
+
+        Args:
+        - x: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        """
         pq = x_to_pq(x)
 
         pq = self.layer(pq, inverse=inverse)
@@ -228,7 +408,21 @@ class Linear(nn.Module):
     def __init__(
         self, dim: int = 2, up_or_low: str = "up", n: int = 3, b: torch.Tensor = None
     ) -> None:
-        """Creates an series of linear sympmetic modules."""
+        """Creates a series of linear symplectic modules.
+
+        Args:
+        - dim: int: The number of dimensions.
+        - up_or_low: str: Whether to start with an upper or lower triangular linear
+            module.
+        - n: int: The number of linear modules to use.
+        - b: torch.Tensor: The bias tensor to use.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        """
 
         super().__init__()
 
@@ -258,6 +452,19 @@ class Linear(nn.Module):
         return super()._apply(fn)
 
     def forward(self, x: torch.Tensor, inverse: bool = False) -> torch.Tensor:
+        """Applies the series of linear symplectic modules to the given tensor.
+
+        Args:
+        - x: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        """
+
         pq = x_to_pq(x)
 
         if inverse:

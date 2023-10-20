@@ -1,0 +1,1733 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>SympNets API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>SympNets</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from typing import Callable, Tuple, List
+import torch
+import torch.nn as nn
+
+# * Functions
+
+
+def x_to_pq(x: torch.Tensor) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Converts X (x, px, y, py) to PQ (x, y, px, py) for sympletic layers.
+    Putting in PQ instead of X will return X.
+
+    Args:
+    - x: torch.Tensor: The input tensor of shape (batch_size, features).
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+
+    dim = x.size()[-1] // 2
+    pq = torch.empty_like(x)
+
+    pq[..., :dim] = x[..., 1::2].clone()  # p
+    pq[..., dim:] = x[..., 0::2].clone()  # q
+
+    return pq
+
+
+def check_up_or_low(up_or_low: str) -&gt; str:
+    &#34;&#34;&#34;Checks if a valid string was given for up_or_low.
+
+    Args:
+    - up_or_low: str: The string to check.
+
+    Returns:
+    - str: The input string if it is valid.
+
+    Raises:
+    - Exception: If the input string is not &#34;up&#34; or &#34;low&#34;.
+    &#34;&#34;&#34;
+
+    if not up_or_low in [&#34;up&#34;, &#34;low&#34;]:
+        msg = f&#39;Expected up_or_low to be &#34;up&#34; or &#34;low&#34; got {up_or_low}.&#39;
+
+        raise Exception(msg)
+
+    return up_or_low
+
+
+def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Multiplies a given matrix by each of the batch of tensors given.
+
+    Args:
+    - mat: torch.Tensor: The matrix to multiply with.
+    - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+    pq_size = pq.size()
+
+    if len(pq_size) == 2:
+        # This is a batch
+        mat = torch.stack(tuple(mat for _ in range(pq_size[0])))
+        pq = torch.bmm(mat, pq.reshape(*pq_size, 1)).reshape(pq_size)
+
+    else:
+        pq = torch.mv(mat, pq)
+
+    return pq
+
+
+def activate_matrix(
+    a: torch.Tensor,
+    dim: int,
+    index_1: Tuple[int, int],
+    index_2: Tuple[int, int],
+    dtype: type,
+    device: torch.device,
+    inverse: bool,
+) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Creates the matrix to multiply by f(pq) to get the term to add to pq for the
+    activation modules.
+
+    Args:
+    - a: torch.Tensor: The input tensor of shape (batch_size, dimentions).
+    - dim: int: The number of dimensions.
+    - index_1: tuple: A tuple of two integers representing the start and end indices
+        of the first dimension.
+    - index_2: tuple: A tuple of two integers representing the start and end indices
+        of the second dimension.
+    - dtype: type: The data type of the output tensor.
+    - device: torch.device: The device to use for the output tensor.
+    - inverse: bool: Whether to use the inverse sign.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (2 * dim, 2 * dim).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+    s1, e1 = index_1
+    s2, e2 = index_2
+    m = torch.zeros((2 * dim, 2 * dim), dtype=dtype, device=device)
+
+    if inverse:
+        sign = -1
+
+    else:
+        sign = 1
+
+    m[s1:e1, s2:e2] = sign * torch.diag(a)
+
+    return m
+
+
+def linear_matrix(
+    A: torch.Tensor,
+    dim: int,
+    index_1: Tuple[int, int],
+    index_2: Tuple[int, int],
+    dtype: type,
+    device: torch.device,
+    inverse: bool,
+) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Creates a matrix for the linear modules.
+
+    Args:
+    - A: torch.Tensor: The parameters of the linear module of shape (dim, dim).
+    - dim: int: The number of dimensions.
+    - index_1: tuple: A tuple of two integers representing the start and end indices
+        of the first dimension.
+    - index_2: tuple: A tuple of two integers representing the start and end indices
+        of the second dimension.
+    - dtype: type: The data type of the output tensor.
+    - device: torch.device: The device to use for the output tensor.
+    - inverse: bool: Whether to use the inverse matrix.
+
+    Returns:
+    - torch.Tensor: The matrix of shape (2 * dim, 2 * dim).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+    s1, e1 = index_1
+    s2, e2 = index_2
+    m = torch.eye(2 * dim, dtype=dtype, device=device)
+
+    if inverse:
+        sign = -1
+    else:
+        sign = 1
+
+    m[s1:e1, s2:e2] = sign * (A + A.T)
+
+    return m
+
+
+# * Sub Modules
+
+
+class activation_sub_up(nn.Module):
+    def __init__(self, func: Callable, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates an upper triangular symplectic activation module.
+
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+        nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.a = nn.Parameter(torch.randn(dim))
+        self.dim = dim
+        self.func = func
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the upper triangular activation symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse sign.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = activate_matrix(
+            self.a,
+            self.dim,
+            index_1=(0, self.dim),
+            index_2=(self.dim, None),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq += batch_mul_matrix_vector(matmul, self.func(pq))  # Acts on q, gives new p
+
+        return pq
+
+
+class activation_sub_low(nn.Module):
+    def __init__(self, func: Callable, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates a lower triangular activation symplectic module.
+
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+            nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.a = nn.Parameter(torch.randn(dim))
+        self.dim = dim
+        self.func = func
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the lower triangular activation symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = activate_matrix(
+            self.a,
+            self.dim,
+            index_1=(self.dim, None),
+            index_2=(0, self.dim),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq += batch_mul_matrix_vector(matmul, self.func(pq))
+
+        return pq
+
+
+class linear_sub_low(nn.Module):
+    def __init__(self, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates a lower triangular linear symplectic module.
+
+        Args:
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
+        self.dim = dim
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the lower triangular linear symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = linear_matrix(
+            self.A,
+            self.dim,
+            index_1=(self.dim, None),
+            index_2=(0, self.dim),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq = batch_mul_matrix_vector(matmul, pq)
+
+        return pq
+
+
+class linear_sub_up(nn.Module):
+    def __init__(self, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates an upper triangular linear symplectic module.
+
+        Args:
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
+        self.dim = dim
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the upper triangular linear symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size,features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size,features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = linear_matrix(
+            self.A,
+            self.dim,
+            index_1=(0, self.dim),
+            index_2=(self.dim, None),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq = batch_mul_matrix_vector(matmul, pq)
+
+        return pq
+
+
+# * Full Modules
+
+
+class Activation(nn.Module):
+    def __init__(self, func: Callable, dim: int = 2, up_or_low: str = &#34;up&#34;) -&gt; None:
+        &#34;&#34;&#34;Creates an activation symplectic module.
+
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+            nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+        - up_or_low: str: Whether to use an upper or lower triangular activation module.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+
+        if up_or_low == &#34;up&#34;:
+            self.layer = activation_sub_up(func, dim=dim)
+
+        elif up_or_low == &#34;low&#34;:
+            self.layer = activation_sub_low(func, dim=dim)
+
+    def forward(self, x: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the activation symplectic module to the given tensor.
+
+        Args:
+        - x: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+        pq = x_to_pq(x)
+
+        pq = self.layer(pq, inverse=inverse)
+
+        nx = x_to_pq(pq)
+
+        return nx
+
+
+class Linear(nn.Module):
+    def __init__(
+        self, dim: int = 2, up_or_low: str = &#34;up&#34;, n: int = 3, b: torch.Tensor = None
+    ) -&gt; None:
+        &#34;&#34;&#34;Creates a series of linear symplectic modules.
+
+        Args:
+        - dim: int: The number of dimensions.
+        - up_or_low: str: Whether to start with an upper or lower triangular linear
+            module.
+        - n: int: The number of linear modules to use.
+        - b: torch.Tensor: The bias tensor to use.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+
+        uplow = str(check_up_or_low(up_or_low))
+        mlist = []
+
+        for _ in range(n):
+            if uplow == &#34;up&#34;:
+                mlist.append(linear_sub_up(dim=dim))
+                uplow = &#34;low&#34;
+
+            elif uplow == &#34;low&#34;:
+                mlist.append(linear_sub_low(dim=dim))
+                uplow = &#34;up&#34;
+
+        self.layers = nn.ModuleList(mlist)
+
+        if b is None:
+            self.b = torch.zeros(2 * dim, dtype=torch.float32)
+
+        else:
+            self.b = b
+
+    def _apply(self, fn):
+        self.b = fn(self.b)
+
+        return super()._apply(fn)
+
+    def forward(self, x: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the series of linear symplectic modules to the given tensor.
+
+        Args:
+        - x: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        pq = x_to_pq(x)
+
+        if inverse:
+            pq -= self.b
+
+            for layer in reversed(self.layers):
+                pq = layer(pq, inverse=True)
+
+        else:
+            for layer in self.layers:
+                pq = layer(pq)
+
+            pq += self.b
+
+        nx = x_to_pq(pq)
+
+        return nx</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="SympNets.activate_matrix"><code class="name flex">
+<span>def <span class="ident">activate_matrix</span></span>(<span>a: torch.Tensor, dim: int, index_1: Tuple[int, int], index_2: Tuple[int, int], dtype: type, device: torch.device, inverse: bool) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates the matrix to multiply by f(pq) to get the term to add to pq for the
+activation modules.</p>
+<p>Args:
+- a: torch.Tensor: The input tensor of shape (batch_size, dimentions).
+- dim: int: The number of dimensions.
+- index_1: tuple: A tuple of two integers representing the start and end indices
+of the first dimension.
+- index_2: tuple: A tuple of two integers representing the start and end indices
+of the second dimension.
+- dtype: type: The data type of the output tensor.
+- device: torch.device: The device to use for the output tensor.
+- inverse: bool: Whether to use the inverse sign.</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (2 * dim, 2 * dim).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def activate_matrix(
+    a: torch.Tensor,
+    dim: int,
+    index_1: Tuple[int, int],
+    index_2: Tuple[int, int],
+    dtype: type,
+    device: torch.device,
+    inverse: bool,
+) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Creates the matrix to multiply by f(pq) to get the term to add to pq for the
+    activation modules.
+
+    Args:
+    - a: torch.Tensor: The input tensor of shape (batch_size, dimentions).
+    - dim: int: The number of dimensions.
+    - index_1: tuple: A tuple of two integers representing the start and end indices
+        of the first dimension.
+    - index_2: tuple: A tuple of two integers representing the start and end indices
+        of the second dimension.
+    - dtype: type: The data type of the output tensor.
+    - device: torch.device: The device to use for the output tensor.
+    - inverse: bool: Whether to use the inverse sign.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (2 * dim, 2 * dim).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+    s1, e1 = index_1
+    s2, e2 = index_2
+    m = torch.zeros((2 * dim, 2 * dim), dtype=dtype, device=device)
+
+    if inverse:
+        sign = -1
+
+    else:
+        sign = 1
+
+    m[s1:e1, s2:e2] = sign * torch.diag(a)
+
+    return m</code></pre>
+</details>
+</dd>
+<dt id="SympNets.batch_mul_matrix_vector"><code class="name flex">
+<span>def <span class="ident">batch_mul_matrix_vector</span></span>(<span>mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Multiplies a given matrix by each of the batch of tensors given.</p>
+<p>Args:
+- mat: torch.Tensor: The matrix to multiply with.
+- pq: torch.Tensor: The input tensor of shape (batch_size, features).</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size, features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Multiplies a given matrix by each of the batch of tensors given.
+
+    Args:
+    - mat: torch.Tensor: The matrix to multiply with.
+    - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+    pq_size = pq.size()
+
+    if len(pq_size) == 2:
+        # This is a batch
+        mat = torch.stack(tuple(mat for _ in range(pq_size[0])))
+        pq = torch.bmm(mat, pq.reshape(*pq_size, 1)).reshape(pq_size)
+
+    else:
+        pq = torch.mv(mat, pq)
+
+    return pq</code></pre>
+</details>
+</dd>
+<dt id="SympNets.check_up_or_low"><code class="name flex">
+<span>def <span class="ident">check_up_or_low</span></span>(<span>up_or_low: str) -> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Checks if a valid string was given for up_or_low.</p>
+<p>Args:
+- up_or_low: str: The string to check.</p>
+<p>Returns:
+- str: The input string if it is valid.</p>
+<p>Raises:
+- Exception: If the input string is not "up" or "low".</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_up_or_low(up_or_low: str) -&gt; str:
+    &#34;&#34;&#34;Checks if a valid string was given for up_or_low.
+
+    Args:
+    - up_or_low: str: The string to check.
+
+    Returns:
+    - str: The input string if it is valid.
+
+    Raises:
+    - Exception: If the input string is not &#34;up&#34; or &#34;low&#34;.
+    &#34;&#34;&#34;
+
+    if not up_or_low in [&#34;up&#34;, &#34;low&#34;]:
+        msg = f&#39;Expected up_or_low to be &#34;up&#34; or &#34;low&#34; got {up_or_low}.&#39;
+
+        raise Exception(msg)
+
+    return up_or_low</code></pre>
+</details>
+</dd>
+<dt id="SympNets.linear_matrix"><code class="name flex">
+<span>def <span class="ident">linear_matrix</span></span>(<span>A: torch.Tensor, dim: int, index_1: Tuple[int, int], index_2: Tuple[int, int], dtype: type, device: torch.device, inverse: bool) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a matrix for the linear modules.</p>
+<p>Args:
+- A: torch.Tensor: The parameters of the linear module of shape (dim, dim).
+- dim: int: The number of dimensions.
+- index_1: tuple: A tuple of two integers representing the start and end indices
+of the first dimension.
+- index_2: tuple: A tuple of two integers representing the start and end indices
+of the second dimension.
+- dtype: type: The data type of the output tensor.
+- device: torch.device: The device to use for the output tensor.
+- inverse: bool: Whether to use the inverse matrix.</p>
+<p>Returns:
+- torch.Tensor: The matrix of shape (2 * dim, 2 * dim).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def linear_matrix(
+    A: torch.Tensor,
+    dim: int,
+    index_1: Tuple[int, int],
+    index_2: Tuple[int, int],
+    dtype: type,
+    device: torch.device,
+    inverse: bool,
+) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Creates a matrix for the linear modules.
+
+    Args:
+    - A: torch.Tensor: The parameters of the linear module of shape (dim, dim).
+    - dim: int: The number of dimensions.
+    - index_1: tuple: A tuple of two integers representing the start and end indices
+        of the first dimension.
+    - index_2: tuple: A tuple of two integers representing the start and end indices
+        of the second dimension.
+    - dtype: type: The data type of the output tensor.
+    - device: torch.device: The device to use for the output tensor.
+    - inverse: bool: Whether to use the inverse matrix.
+
+    Returns:
+    - torch.Tensor: The matrix of shape (2 * dim, 2 * dim).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+    s1, e1 = index_1
+    s2, e2 = index_2
+    m = torch.eye(2 * dim, dtype=dtype, device=device)
+
+    if inverse:
+        sign = -1
+    else:
+        sign = 1
+
+    m[s1:e1, s2:e2] = sign * (A + A.T)
+
+    return m</code></pre>
+</details>
+</dd>
+<dt id="SympNets.x_to_pq"><code class="name flex">
+<span>def <span class="ident">x_to_pq</span></span>(<span>x: torch.Tensor) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts X (x, px, y, py) to PQ (x, y, px, py) for sympletic layers.
+Putting in PQ instead of X will return X.</p>
+<p>Args:
+- x: torch.Tensor: The input tensor of shape (batch_size, features).</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size, features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def x_to_pq(x: torch.Tensor) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Converts X (x, px, y, py) to PQ (x, y, px, py) for sympletic layers.
+    Putting in PQ instead of X will return X.
+
+    Args:
+    - x: torch.Tensor: The input tensor of shape (batch_size, features).
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+
+    dim = x.size()[-1] // 2
+    pq = torch.empty_like(x)
+
+    pq[..., :dim] = x[..., 1::2].clone()  # p
+    pq[..., dim:] = x[..., 0::2].clone()  # q
+
+    return pq</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="SympNets.Activation"><code class="flex name class">
+<span>class <span class="ident">Activation</span></span>
+<span>(</span><span>func: Callable, dim: int = 2, up_or_low: str = 'up')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Creates an activation symplectic module.</p>
+<p>Args:
+- func: Callable: The activation function to be applied. Should apply a
+nonlinear activation function element by element.
+- dim: int: The number of dimensions.
+- up_or_low: str: Whether to use an upper or lower triangular activation module.</p>
+<p>Returns:
+- None</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Activation(nn.Module):
+    def __init__(self, func: Callable, dim: int = 2, up_or_low: str = &#34;up&#34;) -&gt; None:
+        &#34;&#34;&#34;Creates an activation symplectic module.
+
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+            nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+        - up_or_low: str: Whether to use an upper or lower triangular activation module.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+
+        if up_or_low == &#34;up&#34;:
+            self.layer = activation_sub_up(func, dim=dim)
+
+        elif up_or_low == &#34;low&#34;:
+            self.layer = activation_sub_low(func, dim=dim)
+
+    def forward(self, x: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the activation symplectic module to the given tensor.
+
+        Args:
+        - x: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+        pq = x_to_pq(x)
+
+        pq = self.layer(pq, inverse=inverse)
+
+        nx = x_to_pq(pq)
+
+        return nx</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="SympNets.Activation.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x: torch.Tensor, inverse: bool = False) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Applies the activation symplectic module to the given tensor.</p>
+<p>Args:
+- x: torch.Tensor: The input tensor of shape (batch_size, features).
+- inverse: bool: Whether to use the inverse.</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size, features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Applies the activation symplectic module to the given tensor.
+
+    Args:
+    - x: torch.Tensor: The input tensor of shape (batch_size, features).
+    - inverse: bool: Whether to use the inverse.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+    pq = x_to_pq(x)
+
+    pq = self.layer(pq, inverse=inverse)
+
+    nx = x_to_pq(pq)
+
+    return nx</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="SympNets.Linear"><code class="flex name class">
+<span>class <span class="ident">Linear</span></span>
+<span>(</span><span>dim: int = 2, up_or_low: str = 'up', n: int = 3, b: torch.Tensor = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Creates a series of linear symplectic modules.</p>
+<p>Args:
+- dim: int: The number of dimensions.
+- up_or_low: str: Whether to start with an upper or lower triangular linear
+module.
+- n: int: The number of linear modules to use.
+- b: torch.Tensor: The bias tensor to use.</p>
+<p>Returns:
+- None</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Linear(nn.Module):
+    def __init__(
+        self, dim: int = 2, up_or_low: str = &#34;up&#34;, n: int = 3, b: torch.Tensor = None
+    ) -&gt; None:
+        &#34;&#34;&#34;Creates a series of linear symplectic modules.
+
+        Args:
+        - dim: int: The number of dimensions.
+        - up_or_low: str: Whether to start with an upper or lower triangular linear
+            module.
+        - n: int: The number of linear modules to use.
+        - b: torch.Tensor: The bias tensor to use.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+
+        uplow = str(check_up_or_low(up_or_low))
+        mlist = []
+
+        for _ in range(n):
+            if uplow == &#34;up&#34;:
+                mlist.append(linear_sub_up(dim=dim))
+                uplow = &#34;low&#34;
+
+            elif uplow == &#34;low&#34;:
+                mlist.append(linear_sub_low(dim=dim))
+                uplow = &#34;up&#34;
+
+        self.layers = nn.ModuleList(mlist)
+
+        if b is None:
+            self.b = torch.zeros(2 * dim, dtype=torch.float32)
+
+        else:
+            self.b = b
+
+    def _apply(self, fn):
+        self.b = fn(self.b)
+
+        return super()._apply(fn)
+
+    def forward(self, x: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the series of linear symplectic modules to the given tensor.
+
+        Args:
+        - x: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        pq = x_to_pq(x)
+
+        if inverse:
+            pq -= self.b
+
+            for layer in reversed(self.layers):
+                pq = layer(pq, inverse=True)
+
+        else:
+            for layer in self.layers:
+                pq = layer(pq)
+
+            pq += self.b
+
+        nx = x_to_pq(pq)
+
+        return nx</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="SympNets.Linear.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x: torch.Tensor, inverse: bool = False) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Applies the series of linear symplectic modules to the given tensor.</p>
+<p>Args:
+- x: torch.Tensor: The input tensor of shape (batch_size, features).
+- inverse: bool: Whether to use the inverse.</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size, features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Applies the series of linear symplectic modules to the given tensor.
+
+    Args:
+    - x: torch.Tensor: The input tensor of shape (batch_size, features).
+    - inverse: bool: Whether to use the inverse.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+
+    pq = x_to_pq(x)
+
+    if inverse:
+        pq -= self.b
+
+        for layer in reversed(self.layers):
+            pq = layer(pq, inverse=True)
+
+    else:
+        for layer in self.layers:
+            pq = layer(pq)
+
+        pq += self.b
+
+    nx = x_to_pq(pq)
+
+    return nx</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="SympNets.activation_sub_low"><code class="flex name class">
+<span>class <span class="ident">activation_sub_low</span></span>
+<span>(</span><span>func: Callable, dim: int = 2)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Creates a lower triangular activation symplectic module.</p>
+<p>Args:
+- func: Callable: The activation function to be applied. Should apply a
+nonlinear activation function element by element.
+- dim: int: The number of dimensions.</p>
+<p>Returns:
+- None</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class activation_sub_low(nn.Module):
+    def __init__(self, func: Callable, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates a lower triangular activation symplectic module.
+
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+            nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.a = nn.Parameter(torch.randn(dim))
+        self.dim = dim
+        self.func = func
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the lower triangular activation symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = activate_matrix(
+            self.a,
+            self.dim,
+            index_1=(self.dim, None),
+            index_2=(0, self.dim),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq += batch_mul_matrix_vector(matmul, self.func(pq))
+
+        return pq</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="SympNets.activation_sub_low.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Applies the lower triangular activation symplectic module to the given tensor.</p>
+<p>Args:
+- pq: torch.Tensor: The input tensor of shape (batch_size, features).
+- inverse: bool: Whether to use the inverse.</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size, features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Applies the lower triangular activation symplectic module to the given tensor.
+
+    Args:
+    - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+    - inverse: bool: Whether to use the inverse.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+
+    matmul = activate_matrix(
+        self.a,
+        self.dim,
+        index_1=(self.dim, None),
+        index_2=(0, self.dim),
+        dtype=pq.dtype,
+        device=pq.device,
+        inverse=inverse,
+    )
+    pq += batch_mul_matrix_vector(matmul, self.func(pq))
+
+    return pq</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="SympNets.activation_sub_up"><code class="flex name class">
+<span>class <span class="ident">activation_sub_up</span></span>
+<span>(</span><span>func: Callable, dim: int = 2)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Creates an upper triangular symplectic activation module.</p>
+<p>Args:
+- func: Callable: The activation function to be applied. Should apply a
+nonlinear activation function element by element.
+- dim: int: The number of dimensions.</p>
+<p>Returns:
+- None</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class activation_sub_up(nn.Module):
+    def __init__(self, func: Callable, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates an upper triangular symplectic activation module.
+
+        Args:
+        - func: Callable: The activation function to be applied. Should apply a
+        nonlinear activation function element by element.
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.a = nn.Parameter(torch.randn(dim))
+        self.dim = dim
+        self.func = func
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the upper triangular activation symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse sign.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = activate_matrix(
+            self.a,
+            self.dim,
+            index_1=(0, self.dim),
+            index_2=(self.dim, None),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq += batch_mul_matrix_vector(matmul, self.func(pq))  # Acts on q, gives new p
+
+        return pq</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="SympNets.activation_sub_up.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Applies the upper triangular activation symplectic module to the given tensor.</p>
+<p>Args:
+- pq: torch.Tensor: The input tensor of shape (batch_size, features).
+- inverse: bool: Whether to use the inverse sign.</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size, features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Applies the upper triangular activation symplectic module to the given tensor.
+
+    Args:
+    - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+    - inverse: bool: Whether to use the inverse sign.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+
+    matmul = activate_matrix(
+        self.a,
+        self.dim,
+        index_1=(0, self.dim),
+        index_2=(self.dim, None),
+        dtype=pq.dtype,
+        device=pq.device,
+        inverse=inverse,
+    )
+    pq += batch_mul_matrix_vector(matmul, self.func(pq))  # Acts on q, gives new p
+
+    return pq</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="SympNets.linear_sub_low"><code class="flex name class">
+<span>class <span class="ident">linear_sub_low</span></span>
+<span>(</span><span>dim: int = 2)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Creates a lower triangular linear symplectic module.</p>
+<p>Args:
+- dim: int: The number of dimensions.</p>
+<p>Returns:
+- None</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class linear_sub_low(nn.Module):
+    def __init__(self, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates a lower triangular linear symplectic module.
+
+        Args:
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
+        self.dim = dim
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the lower triangular linear symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size, features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = linear_matrix(
+            self.A,
+            self.dim,
+            index_1=(self.dim, None),
+            index_2=(0, self.dim),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq = batch_mul_matrix_vector(matmul, pq)
+
+        return pq</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="SympNets.linear_sub_low.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Applies the lower triangular linear symplectic module to the given tensor.</p>
+<p>Args:
+- pq: torch.Tensor: The input tensor of shape (batch_size, features).
+- inverse: bool: Whether to use the inverse.</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size, features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Applies the lower triangular linear symplectic module to the given tensor.
+
+    Args:
+    - pq: torch.Tensor: The input tensor of shape (batch_size, features).
+    - inverse: bool: Whether to use the inverse.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size, features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+
+    matmul = linear_matrix(
+        self.A,
+        self.dim,
+        index_1=(self.dim, None),
+        index_2=(0, self.dim),
+        dtype=pq.dtype,
+        device=pq.device,
+        inverse=inverse,
+    )
+    pq = batch_mul_matrix_vector(matmul, pq)
+
+    return pq</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="SympNets.linear_sub_up"><code class="flex name class">
+<span>class <span class="ident">linear_sub_up</span></span>
+<span>(</span><span>dim: int = 2)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Creates an upper triangular linear symplectic module.</p>
+<p>Args:
+- dim: int: The number of dimensions.</p>
+<p>Returns:
+- None</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class linear_sub_up(nn.Module):
+    def __init__(self, dim: int = 2) -&gt; None:
+        &#34;&#34;&#34;Creates an upper triangular linear symplectic module.
+
+        Args:
+        - dim: int: The number of dimensions.
+
+        Returns:
+        - None
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        super().__init__()
+        self.A = nn.Parameter(torch.randn((dim, dim)))  # S = A + A^T
+        self.dim = dim
+
+    def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Applies the upper triangular linear symplectic module to the given tensor.
+
+        Args:
+        - pq: torch.Tensor: The input tensor of shape (batch_size,features).
+        - inverse: bool: Whether to use the inverse.
+
+        Returns:
+        - torch.Tensor: The output tensor of shape (batch_size,features).
+
+        Raises:
+        - None
+        &#34;&#34;&#34;
+
+        matmul = linear_matrix(
+            self.A,
+            self.dim,
+            index_1=(0, self.dim),
+            index_2=(self.dim, None),
+            dtype=pq.dtype,
+            device=pq.device,
+            inverse=inverse,
+        )
+        pq = batch_mul_matrix_vector(matmul, pq)
+
+        return pq</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="SympNets.linear_sub_up.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, pq: torch.Tensor, inverse: bool = False) -> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Applies the upper triangular linear symplectic module to the given tensor.</p>
+<p>Args:
+- pq: torch.Tensor: The input tensor of shape (batch_size,features).
+- inverse: bool: Whether to use the inverse.</p>
+<p>Returns:
+- torch.Tensor: The output tensor of shape (batch_size,features).</p>
+<p>Raises:
+- None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, pq: torch.Tensor, inverse: bool = False) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Applies the upper triangular linear symplectic module to the given tensor.
+
+    Args:
+    - pq: torch.Tensor: The input tensor of shape (batch_size,features).
+    - inverse: bool: Whether to use the inverse.
+
+    Returns:
+    - torch.Tensor: The output tensor of shape (batch_size,features).
+
+    Raises:
+    - None
+    &#34;&#34;&#34;
+
+    matmul = linear_matrix(
+        self.A,
+        self.dim,
+        index_1=(0, self.dim),
+        index_2=(self.dim, None),
+        dtype=pq.dtype,
+        device=pq.device,
+        inverse=inverse,
+    )
+    pq = batch_mul_matrix_vector(matmul, pq)
+
+    return pq</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="SympNets.activate_matrix" href="#SympNets.activate_matrix">activate_matrix</a></code></li>
+<li><code><a title="SympNets.batch_mul_matrix_vector" href="#SympNets.batch_mul_matrix_vector">batch_mul_matrix_vector</a></code></li>
+<li><code><a title="SympNets.check_up_or_low" href="#SympNets.check_up_or_low">check_up_or_low</a></code></li>
+<li><code><a title="SympNets.linear_matrix" href="#SympNets.linear_matrix">linear_matrix</a></code></li>
+<li><code><a title="SympNets.x_to_pq" href="#SympNets.x_to_pq">x_to_pq</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="SympNets.Activation" href="#SympNets.Activation">Activation</a></code></h4>
+<ul class="">
+<li><code><a title="SympNets.Activation.forward" href="#SympNets.Activation.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="SympNets.Linear" href="#SympNets.Linear">Linear</a></code></h4>
+<ul class="">
+<li><code><a title="SympNets.Linear.forward" href="#SympNets.Linear.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="SympNets.activation_sub_low" href="#SympNets.activation_sub_low">activation_sub_low</a></code></h4>
+<ul class="">
+<li><code><a title="SympNets.activation_sub_low.forward" href="#SympNets.activation_sub_low.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="SympNets.activation_sub_up" href="#SympNets.activation_sub_up">activation_sub_up</a></code></h4>
+<ul class="">
+<li><code><a title="SympNets.activation_sub_up.forward" href="#SympNets.activation_sub_up.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="SympNets.linear_sub_low" href="#SympNets.linear_sub_low">linear_sub_low</a></code></h4>
+<ul class="">
+<li><code><a title="SympNets.linear_sub_low.forward" href="#SympNets.linear_sub_low.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="SympNets.linear_sub_up" href="#SympNets.linear_sub_up">linear_sub_up</a></code></h4>
+<ul class="">
+<li><code><a title="SympNets.linear_sub_up.forward" href="#SympNets.linear_sub_up.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
