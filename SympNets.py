@@ -66,8 +66,7 @@ def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor
 
     if len(pq_size) == 2:
         # This is a batch
-        mat = torch.stack(tuple(mat for _ in range(pq_size[0])))
-        pq = torch.bmm(mat, pq.unsqueeze(-1)).squeeze(-1)
+        pq = torch.bmm(mat.repeat(pq_size[0], 1, 1), pq.unsqueeze(-1)).squeeze(-1)
 
     else:
         pq = torch.mv(mat, pq)
