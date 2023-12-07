@@ -2,8 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import time
 import SympNetsTorch.SympNets as snn
-from commonfuncs import timeit
+
+seed = 2023
+torch.manual_seed(seed=seed)  # set seed for reproducibility
 
 
 class __test_network(nn.Module):
@@ -38,7 +41,17 @@ class __test_network(nn.Module):
         return nx
 
 
-@timeit
+def quick_time(func):
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f"Time: {end-start} s")
+
+    return wrapper
+
+
+@quick_time
 def test_modules(
     numdata: int = 1000, batch_size: int = 150, print_inverse_accuracy: bool = True
 ):
@@ -145,12 +158,22 @@ def test_modules(
 
         test_losses += test_model(nn_model, test_loader)
 
-    success = True
+    nn_model.eval()
+    output_data = torch.cat((nn_model(train_x), nn_model(test_x)), dim=0)
 
-    print("Test complete!")
+    # torch.save(output_data, "output_data.pt") # save data for testing
+
+    truth = torch.load("output_data.pt")
+
+    if torch.allclose(output_data, truth, atol=1e-5):
+        success = True
+        print("Test passed!")
+    else:
+        success = False
+        print("Test failed!")
 
     return success
 
 
 if __name__ == "__main__":
-    test_modules(print_inverse_accuracy=True)
+    test_modules(print_inverse_accuracy=False)
