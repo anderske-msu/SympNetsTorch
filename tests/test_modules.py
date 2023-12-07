@@ -1,8 +1,9 @@
+import time
+import pathlib
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import time
 import SympNetsTorch.SympNets as snn
 
 seed = 2023
@@ -58,6 +59,7 @@ def test_modules(
     print("Starting test...")
     test_size = 0.3
     success = False
+    test_dir = pathlib.Path(__file__).parent.absolute()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -161,9 +163,9 @@ def test_modules(
     nn_model.eval()
     output_data = torch.cat((nn_model(train_x), nn_model(test_x)), dim=0)
 
-    # torch.save(output_data, "output_data.pt") # save data for testing
+    # torch.save(output_data, test_dir / "output_data.pt")  # save data for testing
 
-    truth = torch.load("output_data.pt")
+    truth = torch.load(test_dir / "output_data.pt")
 
     if torch.allclose(output_data, truth, atol=1e-5):
         success = True
