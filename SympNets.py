@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, List
+import typing
 import torch
 import torch.nn as nn
 
@@ -77,8 +77,8 @@ def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor
 def activate_matrix(
     a: torch.Tensor,
     dim: int,
-    index_1: Tuple[int, int],
-    index_2: Tuple[int, int],
+    index_1: typing.Tuple[int, int],
+    index_2: typing.Tuple[int, int],
     dtype: type,
     device: torch.device,
     inverse: bool,
@@ -121,8 +121,8 @@ def activate_matrix(
 def linear_matrix(
     A: torch.Tensor,
     dim: int,
-    index_1: Tuple[int, int],
-    index_2: Tuple[int, int],
+    index_1: typing.Tuple[int, int],
+    index_2: typing.Tuple[int, int],
     dtype: type,
     device: torch.device,
     inverse: bool,
@@ -164,7 +164,9 @@ def linear_matrix(
 
 
 class activation_sub_up(nn.Module):
-    def __init__(self, func: Callable, dim: int = 2) -> None:
+    def __init__(
+        self, func: typing.Callable[[torch.Tensor], torch.Tensor], dim: int = 2
+    ) -> None:
         """Creates an upper triangular symplectic activation module.
 
         Args:
@@ -213,7 +215,9 @@ class activation_sub_up(nn.Module):
 
 
 class activation_sub_low(nn.Module):
-    def __init__(self, func: Callable, dim: int = 2) -> None:
+    def __init__(
+        self, func: typing.Callable[[torch.Tensor], torch.Tensor], dim: int = 2
+    ) -> None:
         """Creates a lower triangular activation symplectic module.
 
         Args:
@@ -357,7 +361,12 @@ class linear_sub_up(nn.Module):
 
 
 class Activation(nn.Module):
-    def __init__(self, func: Callable, dim: int = 2, up_or_low: str = "up") -> None:
+    def __init__(
+        self,
+        func: typing.Callable[[torch.Tensor], torch.Tensor],
+        dim: int = 2,
+        up_or_low: str = "up",
+    ) -> None:
         """Creates an activation symplectic module.
 
         Args:
