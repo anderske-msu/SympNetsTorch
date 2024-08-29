@@ -62,16 +62,11 @@ def batch_mul_matrix_vector(mat: torch.Tensor, pq: torch.Tensor) -> torch.Tensor
     Raises:
     - None
     """
-    pq_size = pq.size()
 
-    if len(pq_size) == 2:
-        # This is a batch
-        pq = torch.bmm(mat.repeat(pq_size[0], 1, 1), pq.unsqueeze(-1)).squeeze(-1)
+    # Used to be more complicated but this is faster.
+    # Now I have a whole function for a one-liner, great.
 
-    else:
-        pq = torch.mv(mat, pq)
-
-    return pq
+    return torch.matmul(mat, pq.T).T
 
 
 def activate_matrix(
