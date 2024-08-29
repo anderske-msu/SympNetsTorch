@@ -6,7 +6,7 @@ import torch.nn as nn
 
 
 def x_to_pq(x: torch.Tensor) -> torch.Tensor:
-    """Converts X (x, px, y, py) to PQ (x, y, px, py) for sympletic layers.
+    """Converts X (x, px, y, py) to PQ (px, py, x, y) for sympletic layers.
     Putting in PQ instead of X will return X.
 
     Args:
