@@ -1,6 +1,6 @@
 # Deprecated
 
-**This repository is deprecated and no longer maintained. Please visit the new repository at [new-repository-link](https://github.com/MSU-Beam-Dynamics/SympNetsTorch).**
+**This repository is deprecated and no longer maintained. Please visit the new repository at [MSU-Beam-Dynamics](https://github.com/MSU-Beam-Dynamics/SympNetsTorch).**
 
 ## Original README Content
 
